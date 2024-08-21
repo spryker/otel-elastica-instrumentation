@@ -35,6 +35,7 @@ class ElasticaInstrumentation
             class: Client::class,
             function: static::METHOD_NAME,
             pre: function (Client $client, array $params): void {
+                dump('12');die;
                 $instrumentation = new CachedInstrumentation();
                 $request = new RequestProcessor();
 
