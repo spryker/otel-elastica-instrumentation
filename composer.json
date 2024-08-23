@@ -11,10 +11,6 @@
         "ruflin/elastica": "^7.0",
         "spryker/opentelemetry": "dev-feature/frw-8618/master-open-telemetry"
     },
-    "require-dev": {
-        "spryker/code-sniffer": "*",
-        "spryker/testify": "*"
-    },
     "autoload": {
         "psr-4": {
             "Spryker\\": "src/Spryker/"

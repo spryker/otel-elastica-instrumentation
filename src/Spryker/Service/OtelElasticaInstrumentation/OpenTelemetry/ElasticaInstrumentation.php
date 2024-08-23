@@ -15,6 +15,7 @@ use OpenTelemetry\Context\Context;
 use OpenTelemetry\SemConv\TraceAttributes;
 use Spryker\Shared\Opentelemetry\Instrumentation\CachedInstrumentation;
 use Spryker\Shared\Opentelemetry\Request\RequestProcessor;
+use Spryker\Zed\Opentelemetry\Business\Generator\SpanFilter\SamplerSpanFilter;
 use Throwable;
 use function OpenTelemetry\Instrumentation\hook;
 
@@ -41,11 +42,25 @@ class ElasticaInstrumentation
     protected const ATTRIBUTE_QUERY_TIME = 'queryTime';
 
     /**
+     * @var string
+     */
+    protected const ATTRIBUTE_SEARCH_INDEX = 'search.index';
+
+    /**
+     * @var string
+     */
+    protected const ATTRIBUTE_SEARCH_QUERY = 'search.query';
+
+    /**
+     * @var string
+     */
+    protected const ATTRIBUTE_ROOT_URL = 'root.url';
+
+    /**
      * @return void
      */
     public static function register(): void
     {
-        // phpcs:disable
         hook(
             class: Client::class,
             function: static::METHOD_NAME,
@@ -56,9 +71,9 @@ class ElasticaInstrumentation
                 $span = $instrumentation->tracer()
                     ->spanBuilder(static::SPAN_NAME)
                     ->setSpanKind(SpanKind::KIND_CLIENT)
-                    ->setAttribute(TraceAttributes::URL_FULL, $request->getRequest()->getUri())
-                    ->setAttribute(TraceAttributes::HTTP_REQUEST_METHOD, $request->getRequest()->getMethod())
-                    ->setAttribute(TraceAttributes::URL_QUERY, $request->getRequest()->getQueryString())
+                    ->setAttribute(static::ATTRIBUTE_SEARCH_INDEX, $params[0])
+                    ->setAttribute(static::ATTRIBUTE_SEARCH_QUERY, serialize($params[2]))
+                    ->setAttribute(static::ATTRIBUTE_ROOT_URL, $request->getRequest()->getUri())
                     ->setAttribute(TraceAttributes::URL_DOMAIN, $request->getRequest()->headers->get(static::HEADER_HOST))
                     ->startSpan();
                 $span->activate();
@@ -76,9 +91,10 @@ class ElasticaInstrumentation
                     $span->setStatus(StatusCode::STATUS_OK);
                 }
 
+                $span = SamplerSpanFilter::filter($span, true);
+
                 $span->end();
             }
         );
-        // phpcs:enable
     }
 }
