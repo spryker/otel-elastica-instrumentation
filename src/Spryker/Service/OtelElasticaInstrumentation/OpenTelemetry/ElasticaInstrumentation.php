@@ -26,6 +26,21 @@ class ElasticaInstrumentation
     protected const METHOD_NAME = 'request';
 
     /**
+     * @var string
+     */
+    protected const SPAN_NAME = 'elasticsearch';
+
+    /**
+     * @var string
+     */
+    protected const HOST = 'host';
+
+    /**
+     * @var string
+     */
+    protected const QUERY_TIME = 'queryTime';
+
+    /**
      * @return void
      */
     public static function register(): void
@@ -40,12 +55,12 @@ class ElasticaInstrumentation
 
                 $span = $instrumentation::getCachedInstrumentation()
                     ->tracer()
-                    ->spanBuilder('elasticsearch-query')
+                    ->spanBuilder(static::SPAN_NAME)
                     ->setSpanKind(SpanKind::KIND_CLIENT)
                     ->setAttribute(TraceAttributes::URL_FULL, $request->getRequest()->getUri())
                     ->setAttribute(TraceAttributes::HTTP_REQUEST_METHOD, $request->getRequest()->getMethod())
                     ->setAttribute(TraceAttributes::URL_QUERY, $request->getRequest()->getQueryString())
-                    ->setAttribute(TraceAttributes::URL_DOMAIN, $request->getRequest()->headers->get('host'))
+                    ->setAttribute(TraceAttributes::URL_DOMAIN, $request->getRequest()->headers->get(static::HOST))
                     ->startSpan();
                 $span->activate();
 
@@ -58,7 +73,7 @@ class ElasticaInstrumentation
                     $span->recordException($exception);
                     $span->setStatus(StatusCode::STATUS_ERROR);
                 } else {
-                    $span->setAttribute('queryTime', $response->getQueryTime());
+                    $span->setAttribute(static::QUERY_TIME, $response->getQueryTime());
                     $span->setStatus(StatusCode::STATUS_OK);
                 }
 
