@@ -76,7 +76,6 @@ class ElasticaInstrumentation
                     ->setAttribute(static::ATTRIBUTE_ROOT_URL, $request->getRequest()->getUri())
                     ->setAttribute(TraceAttributes::URL_DOMAIN, $request->getRequest()->headers->get(static::HEADER_HOST))
                     ->startSpan();
-                $span->activate();
 
                 Context::storage()->attach($span->storeInContext(Context::getCurrent()));
             },
